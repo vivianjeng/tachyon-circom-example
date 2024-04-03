@@ -2,28 +2,63 @@
 
 ## Prerequisites
 
+1. Update submodules.
+
+   ```shell
+   git submodule update --init
+   ```
+
+1. Install prerequisite for [Tachyon](https://github.com/kroma-network/tachyon/) by following the [instructions](https://github.com/kroma-network/tachyon/blob/main/docs/how_to_use/how_to_build.md#prerequisites).
+
+1. Install [snarkjs](https://github.com/iden3/snarkjs).
+
+   ```shell
+   npm install -g snarkjs@latest
+   ```
+
+1. Prepare `.bazelrc.user`.
+
+   - On Linux
+
+      ```shell
+      echo "build --config linux" > .bazelrc.user
+      echo "build --@kroma_network_tachyon//:has_openmp" >> .bazelrc.user
+      ```
+
+   - On Macos ARM64(After M1)
+
+      ```shell
+      echo "build --config macos_arm64" > .bazelrc.user
+      ```
+
+   - On Macos x86(Before M1)
+
+      ```shell
+      echo "build --config macos_x86_64" > .bazelrc.user
+      ```
+
+1. Sync the rust dependencies.
+
+   ```shell
+   CARGO_BAZEL_REPIN=1 bazel sync --only=crate_index
+   ```
+
+## How to run
+
 ```shell
-git submodule update --init
+bazel run //src:prover_main
 ```
 
-### Bazel
+## How to compile circom
 
-Follow the instructions [here](https://bazel.build/install).
-
-## How to run prover(on Linux)
+This task is automatically called when running `//src:prover_main`, but you can also compile a circuit manually like this example below.
 
 ```shell
-bazel run --config linux //src:prover_main
+bazel build //circuits:compile_multiplier_2
 ```
 
-## How to run prover(on Macos arm64)
+As a result, these 3 files are generated.
 
-```shell
-bazel run --config macos_arm64 //src:prover_main
-```
-
-## How to run prover(on Macos x64)
-
-```shell
-bazel run --config macos_x86_64 //src:prover_main
-```
+- `bazel-bin/circuits/multiplier_2.r1cs`
+- `bazel-bin/circuits/multiplier_2_cpp/multiplier_2.cpp`
+- `bazel-bin/circuits/multiplier_2_cpp/multiplier_2.dat`
