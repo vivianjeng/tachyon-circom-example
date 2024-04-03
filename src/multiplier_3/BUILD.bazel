@@ -1,0 +1,20 @@
+load("@kroma_network_tachyon//bazel:tachyon_cc.bzl", "tachyon_cc_binary")
+
+tachyon_cc_binary(
+    name = "prover_main",
+    srcs = ["prover_main.cc"],
+    data = [
+        "//circuits/multiplier_3:compile_multiplier_3",
+        "//circuits/multiplier_3:multiplier_3.zkey",
+    ],
+    deps = [
+        "//circuits/multiplier_3:gen_witness_multiplier_3",
+        "@kroma_network_circom//circomlib/circuit:quadratic_arithmetic_program",
+        "@kroma_network_circom//circomlib/circuit:witness_loader",
+        "@kroma_network_circom//circomlib/zkey:zkey_parser",
+        "@kroma_network_tachyon//tachyon/math/elliptic_curves/bn/bn254",
+        "@kroma_network_tachyon//tachyon/math/polynomials/univariate:univariate_evaluation_domain_factory",
+        "@kroma_network_tachyon//tachyon/zk/r1cs/groth16:prove",
+        "@kroma_network_tachyon//tachyon/zk/r1cs/groth16:verify",
+    ],
+)

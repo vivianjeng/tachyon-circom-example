@@ -1,0 +1,21 @@
+load("@kroma_network_circom//:build_defs.bzl", "witness_gen_library")
+load("@kroma_network_rules_circom//:build_defs.bzl", "compile_circuit")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["sha256_512.zkey"])
+
+PRIME = "bn128"
+
+compile_circuit(
+    name = "compile_sha256_512",
+    main = "sha256_512.circom",
+    prime = PRIME,
+    deps = ["@kroma_network_circomlib//circuits/sha256"],
+)
+
+witness_gen_library(
+    name = "gen_witness_sha256_512",
+    gendep = ":compile_sha256_512",
+    prime = PRIME,
+)

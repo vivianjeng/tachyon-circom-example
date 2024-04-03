@@ -1,0 +1,26 @@
+load("@kroma_network_circom//:build_defs.bzl", "witness_gen_library")
+load("@kroma_network_rules_circom//:build_defs.bzl", "circom_library", "compile_circuit")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["multiplier_2_main.zkey"])
+
+PRIME = "bn128"
+
+circom_library(
+    name = "multiplier_2",
+    srcs = ["multiplier_2.circom"],
+)
+
+compile_circuit(
+    name = "compile_multiplier_2_main",
+    main = "multiplier_2_main.circom",
+    prime = PRIME,
+    deps = [":multiplier_2"],
+)
+
+witness_gen_library(
+    name = "gen_witness_multiplier_2_main",
+    gendep = ":compile_multiplier_2_main",
+    prime = PRIME,
+)

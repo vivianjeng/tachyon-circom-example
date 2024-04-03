@@ -1,0 +1,21 @@
+load("@kroma_network_tachyon//bazel:tachyon_cc.bzl", "tachyon_cc_binary")
+
+tachyon_cc_binary(
+    name = "prover_main",
+    srcs = ["prover_main.cc"],
+    data = [
+        "//circuits/sha256_512:compile_sha256_512",
+        "//circuits/sha256_512:sha256_512.zkey",
+    ],
+    deps = [
+        "//circuits/sha256_512:gen_witness_sha256_512",
+        "@com_google_boringssl//:crypto",
+        "@kroma_network_circom//circomlib/circuit:quadratic_arithmetic_program",
+        "@kroma_network_circom//circomlib/circuit:witness_loader",
+        "@kroma_network_circom//circomlib/zkey:zkey_parser",
+        "@kroma_network_tachyon//tachyon/math/elliptic_curves/bn/bn254",
+        "@kroma_network_tachyon//tachyon/math/polynomials/univariate:univariate_evaluation_domain_factory",
+        "@kroma_network_tachyon//tachyon/zk/r1cs/groth16:prove",
+        "@kroma_network_tachyon//tachyon/zk/r1cs/groth16:verify",
+    ],
+)
