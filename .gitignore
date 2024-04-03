@@ -138,3 +138,5 @@ tags
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/c++,vim,bazel,linux,macos,visualstudiocode
+
+.bazelrc.user
