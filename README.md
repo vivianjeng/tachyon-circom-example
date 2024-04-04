@@ -23,18 +23,21 @@
      ```shell
      echo "build --config linux" > .bazelrc.user
      echo "build --@kroma_network_tachyon//:has_openmp" >> .bazelrc.user
+     echo "build -c opt" >> .bazelrc.user
      ```
 
    - On Macos ARM64(After M1)
 
      ```shell
      echo "build --config macos_arm64" > .bazelrc.user
+     echo "build -c opt" >> .bazelrc.user
      ```
 
    - On Macos x86(Before M1)
 
      ```shell
      echo "build --config macos_x86_64" > .bazelrc.user
+     echo "build -c opt" >> .bazelrc.user
      ```
 
 1. Sync the rust dependencies.
