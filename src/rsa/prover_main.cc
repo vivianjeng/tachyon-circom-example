@@ -64,10 +64,34 @@ void CheckPublicInput(const std::vector<uint8_t> &in,
 }
 
 int RealMain(int argc, char **argv) {
+  auto start_time = std::chrono::high_resolution_clock::now();
   constexpr size_t MaxDegree = (size_t{1} << 32) - 1;
   using Domain = math::UnivariateEvaluationDomain<F, MaxDegree>;
 
   Curve::Init();
+
+  auto zkey_start_time = std::chrono::high_resolution_clock::now();
+  zk::r1cs::groth16::ProvingKey<Curve> proving_key;
+  zk::r1cs::ConstraintMatrices<F> constraint_matrices;
+  {
+    ZKeyParser zkey_parser;
+    std::unique_ptr<ZKey> zkey =
+        zkey_parser.Parse(base::FilePath("circuits/rsa/rsa_main.zkey"));
+    CHECK(zkey);
+
+    proving_key = std::move(*zkey).TakeProvingKey().ToNativeProvingKey<Curve>();
+    constraint_matrices =
+        std::move(*zkey).TakeConstraintMatrices().ToNative<F>();
+  }
+
+  auto zkey_end_time = std::chrono::high_resolution_clock::now();
+  auto zkey_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+      zkey_end_time - zkey_start_time);
+
+  std::cout << "zkey time: " << zkey_duration.count() << " milliseconds"
+            << std::endl;
+
+  auto load_start_time = std::chrono::high_resolution_clock::now();
 
   WitnessLoader<F> witness_loader(
       base::FilePath("circuits/rsa/rsa_main_cpp/rsa_main.dat"));
@@ -145,25 +169,17 @@ int RealMain(int argc, char **argv) {
                                  F(0ULL)};
   witness_loader.Set("signature", signature);
   witness_loader.Set("modulus", modulus);
-   witness_loader.Set("base_message", base_message);
+  witness_loader.Set("base_message", base_message);
   // witness_loader.Set("in", Uint8ToBitVector<F>(in));
   witness_loader.Load();
+  auto load_end_time = std::chrono::high_resolution_clock::now();
+  auto load_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+      load_end_time - load_start_time);
 
-  zk::r1cs::groth16::ProvingKey<Curve> proving_key;
-  zk::r1cs::ConstraintMatrices<F> constraint_matrices;
-  {
-    ZKeyParser zkey_parser;
-    std::unique_ptr<ZKey> zkey =
-        zkey_parser.Parse(base::FilePath("circuits/rsa/rsa_main.zkey"));
-    CHECK(zkey);
+  std::cout << "load wtns time: " << load_duration.count() << " milliseconds"
+            << std::endl;
 
-    proving_key = std::move(*zkey).TakeProvingKey().ToNativeProvingKey<Curve>();
-    constraint_matrices =
-        std::move(*zkey).TakeConstraintMatrices().ToNative<F>();
-  }
-
-  auto start_time = std::chrono::high_resolution_clock::now();
-
+  auto wtns_start_time = std::chrono::high_resolution_clock::now();
   std::vector<F> full_assignments = base::CreateVector(
       constraint_matrices.num_instance_variables +
           constraint_matrices.num_witness_variables,
@@ -172,13 +188,6 @@ int RealMain(int argc, char **argv) {
   absl::Span<const F> public_inputs =
       absl::MakeConstSpan(full_assignments)
           .subspan(1, constraint_matrices.num_instance_variables - 1);
-
-  auto end_time = std::chrono::high_resolution_clock::now();
-  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-      end_time - start_time);
-
-  std::cout << "Witness time: " << duration.count() << " milliseconds"
-            << std::endl;
 
   // CHECK_EQ(public_inputs.size(), size_t{256});
   // CheckPublicInput(in, public_inputs);
@@ -189,6 +198,12 @@ int RealMain(int argc, char **argv) {
   std::vector<F> h_evals =
       QuadraticArithmeticProgram<F>::WitnessMapFromMatrices(
           domain.get(), constraint_matrices, full_assignments);
+  auto wtns_end_time = std::chrono::high_resolution_clock::now();
+  auto wtns_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+      wtns_end_time - wtns_start_time);
+
+  std::cout << "calc witness time: " << wtns_duration.count() << " milliseconds"
+            << std::endl;
 
   auto prove_start_time = std::chrono::high_resolution_clock::now();
   zk::r1cs::groth16::Proof<Curve> proof =
@@ -206,6 +221,11 @@ int RealMain(int argc, char **argv) {
   std::cout << "Prove time: " << prove_duration.count() << " milliseconds"
             << std::endl;
 
+  auto end_time = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(
+      end_time - start_time);
+  std::cout << "====Total time: " << duration.count()
+            << " milliseconds====" << std::endl;
   std::cout << proof.ToString() << std::endl;
 
   zk::r1cs::groth16::PreparedVerifyingKey<Curve> prepared_verifying_key =
