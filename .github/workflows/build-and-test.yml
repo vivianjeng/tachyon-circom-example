@@ -39,3 +39,5 @@ jobs:
           run: ./scripts/download.sh
         - name: Run RSA prover
           run: bazel run //src/rsa:prover_main
+        - name: Run SHA prover
+          run: bazel run //src/sha256_512:prover_main
