@@ -14,30 +14,30 @@ env:
 
 jobs:
     prover-main:
-      runs-on: macos-latest
-      steps:
-        - uses: actions/checkout@v4
-        - name: Use Node.js
-          uses: actions/setup-node@v4
-        - uses: bazelbuild/setup-bazelisk@v3
-        - name: Mount bazel cache  # Optional
-          uses: actions/cache@v4
-          with:
-            path: "~/.cache/bazel"
-            key: bazel
-        - name: Update submodules
-          run: git submodule update --init
-        - name: install snarkjs
-          run: npm install -g snarkjs
-        - name: Prepare .bazelrc.user
-          run: |
-            echo "build --config macos_arm64" > .bazelrc.user
-            echo "build -c opt" >> .bazelrc.user
-        - name: Sync rust dependencies
-          run: CARGO_BAZEL_REPIN=1 bazel sync --only=crate_index
-        - name: Download zkey
-          run: ./scripts/download.sh
-        - name: Run RSA prover
-          run: bazel run //src/rsa:prover_main
-        - name: Run SHA prover
-          run: bazel run //src/sha256_512:prover_main
+        runs-on: macos-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Use Node.js
+              uses: actions/setup-node@v4
+            - uses: bazelbuild/setup-bazelisk@v3
+            - name: Mount bazel cache # Optional
+              uses: actions/cache@v4
+              with:
+                  path: "~/.cache/bazel"
+                  key: bazel
+            - name: Update submodules
+              run: git submodule update --init
+            - name: install snarkjs
+              run: npm install -g snarkjs
+            - name: Prepare .bazelrc.user
+              run: |
+                  echo "build --config macos_arm64" > .bazelrc.user
+                  echo "build -c opt" >> .bazelrc.user
+            - name: Sync rust dependencies
+              run: CARGO_BAZEL_REPIN=1 bazel sync --only=crate_index
+            - name: Download zkey
+              run: ./scripts/download.sh
+            - name: Run RSA prover
+              run: bazel run //src/rsa:prover_main
+            - name: Run SHA prover
+              run: bazel run //src/sha256_512:prover_main
