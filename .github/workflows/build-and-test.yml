@@ -41,3 +41,5 @@ jobs:
               run: bazel run //src/rsa:prover_main
             - name: Run SHA prover
               run: bazel run //src/sha256_512:prover_main
+            - name: Run keccak prover
+              run: bazel run //src/keccak256:prover_main

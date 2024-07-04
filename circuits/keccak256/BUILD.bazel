@@ -1,0 +1,26 @@
+load("@kroma_network_circom//:build_defs.bzl", "witness_gen_library")
+load("@kroma_network_rules_circom//:build_defs.bzl", "circom_library", "compile_circuit")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["keccak_main.zkey"])
+
+PRIME = "bn128"
+
+circom_library(
+    name = "keccak",
+    srcs = ["keccak.circom", "utils.circom", "permutations.circom"],
+)
+
+compile_circuit(
+    name = "compile_keccak",
+    main = "keccak_main.circom",
+    prime = PRIME,
+    deps = ["keccak", "@kroma_network_circomlib//circuits/sha256", "@kroma_network_circomlib//circuits:gates"],
+)
+
+witness_gen_library(
+    name = "gen_witness_keccak",
+    gendep = ":compile_keccak",
+    prime = PRIME,
+)
