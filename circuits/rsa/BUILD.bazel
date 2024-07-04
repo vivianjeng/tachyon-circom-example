@@ -1,0 +1,26 @@
+load("@kroma_network_circom//:build_defs.bzl", "witness_gen_library")
+load("@kroma_network_rules_circom//:build_defs.bzl", "circom_library", "compile_circuit")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(["rsa_main.zkey"])
+
+PRIME = "bn128"
+
+circom_library(
+    name = "rsa",
+    srcs = ["rsa.circom", "bigint_func.circom", "bigint.circom", "fp.circom"],
+)
+
+compile_circuit(
+    name = "compile_rsa",
+    main = "rsa_main.circom",
+    prime = PRIME,
+    deps = ["rsa", "@kroma_network_circomlib//circuits:comparators", "@kroma_network_circomlib//circuits:bitify", "@kroma_network_circomlib//circuits:gates", "@kroma_network_circomlib//circuits:sign"],
+)
+
+witness_gen_library(
+    name = "gen_witness_rsa",
+    gendep = ":compile_rsa",
+    prime = PRIME,
+)
