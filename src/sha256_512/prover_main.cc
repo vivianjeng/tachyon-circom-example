@@ -108,20 +108,6 @@ int RealMain(int argc, char **argv) {
       constraint_matrices.num_instance_variables +
           constraint_matrices.num_witness_variables,
       [&witness_loader](size_t i) { return witness_loader.Get(i); });
-
-  absl::Span<const F> public_inputs =
-      absl::MakeConstSpan(full_assignments)
-          .subspan(1, constraint_matrices.num_instance_variables - 1);
-
-  CHECK_EQ(public_inputs.size(), size_t{256});
-  CheckPublicInput(in, public_inputs);
-
-  std::unique_ptr<Domain> domain =
-      Domain::Create(constraint_matrices.num_constraints +
-                     constraint_matrices.num_instance_variables);
-  std::vector<F> h_evals =
-      QuadraticArithmeticProgram<F>::WitnessMapFromMatrices(
-          domain.get(), constraint_matrices, full_assignments);
   auto wtns_end_time = std::chrono::high_resolution_clock::now();
   auto wtns_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
       wtns_end_time - wtns_start_time);
@@ -130,6 +116,18 @@ int RealMain(int argc, char **argv) {
             << std::endl;
 
   auto prove_start_time = std::chrono::high_resolution_clock::now();
+  absl::Span<const F> public_inputs =
+      absl::MakeConstSpan(full_assignments)
+          .subspan(1, constraint_matrices.num_instance_variables - 1);
+
+  std::unique_ptr<Domain> domain =
+      Domain::Create(constraint_matrices.num_constraints +
+                     constraint_matrices.num_instance_variables);
+
+  std::vector<F> h_evals =
+      QuadraticArithmeticProgram<F>::WitnessMapFromMatrices(
+          domain.get(), constraint_matrices, full_assignments);
+
   zk::r1cs::groth16::Proof<Curve> proof =
       zk::r1cs::groth16::CreateProofWithAssignmentZK(
           proving_key, absl::MakeConstSpan(h_evals),
@@ -150,6 +148,8 @@ int RealMain(int argc, char **argv) {
       end_time - start_time);
   std::cout << "====Total time: " << duration.count()
             << " milliseconds====" << std::endl;
+  CHECK_EQ(public_inputs.size(), size_t{256});
+  CheckPublicInput(in, public_inputs);
   std::cout << proof.ToString() << std::endl;
 
   zk::r1cs::groth16::PreparedVerifyingKey<Curve> prepared_verifying_key =

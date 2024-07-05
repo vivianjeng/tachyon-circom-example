@@ -53,6 +53,12 @@ int RealMain(int argc, char **argv) {
           constraint_matrices.num_witness_variables,
       [&witness_loader](size_t i) { return witness_loader.Get(i); });
 
+  std::cout << full_assignments.size() << std::endl;
+  CHECK_EQ(full_assignments[0], F(1));
+  CHECK_EQ(full_assignments[1], a * b);
+  CHECK_EQ(full_assignments[2], a);
+  CHECK_EQ(full_assignments[3], b);
+
   absl::Span<const F> public_inputs =
       absl::MakeConstSpan(full_assignments)
           .subspan(1, constraint_matrices.num_instance_variables - 1);
