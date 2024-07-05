@@ -91,7 +91,7 @@ int RealMain(int argc, char **argv) {
   std::cout << "zkey time: " << zkey_duration.count() << " milliseconds"
             << std::endl;
 
-  auto load_start_time = std::chrono::high_resolution_clock::now();
+  auto wtns_start_time = std::chrono::high_resolution_clock::now();
 
   WitnessLoader<F> witness_loader(
       base::FilePath("circuits/rsa/rsa_main_cpp/rsa_main.dat"));
@@ -172,14 +172,7 @@ int RealMain(int argc, char **argv) {
   witness_loader.Set("base_message", base_message);
   // witness_loader.Set("in", Uint8ToBitVector<F>(in));
   witness_loader.Load();
-  auto load_end_time = std::chrono::high_resolution_clock::now();
-  auto load_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
-      load_end_time - load_start_time);
 
-  std::cout << "load wtns time: " << load_duration.count() << " milliseconds"
-            << std::endl;
-
-  auto wtns_start_time = std::chrono::high_resolution_clock::now();
   std::vector<F> full_assignments = base::CreateVector(
       constraint_matrices.num_instance_variables +
           constraint_matrices.num_witness_variables,
