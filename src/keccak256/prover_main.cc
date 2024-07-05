@@ -136,10 +136,10 @@ int RealMain(int argc, char **argv) {
       [&witness_loader](size_t i) { return witness_loader.Get(i); });
 
   auto wtns_end_time = std::chrono::high_resolution_clock::now();
-  auto wtns_duration = std::chrono::duration_cast<std::chrono::microseconds>(
+  auto wtns_duration = std::chrono::duration_cast<std::chrono::milliseconds>(
       wtns_end_time - wtns_start_time);
 
-  std::cout << "calc witness time: " << wtns_duration.count() << " microseconds"
+  std::cout << "calc witness time: " << wtns_duration.count() << " milliseconds"
             << std::endl;
 
   absl::Span<const F> public_inputs =
